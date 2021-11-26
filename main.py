@@ -3,13 +3,15 @@ from pathlib import Path
 from hazm import *
 import json
 from datetime import datetime
+import sys
+
 
 class Document():
     def __init__(self, id, content, title):
         self.id = id
         self.content = content
         self.title = title
-    
+
 
 # this function collects the documents info from the excel file
 def getDocuments():
@@ -18,10 +20,11 @@ def getDocuments():
     doc_sheet = raw_doc.active
     content = doc_sheet['A']
     title = doc_sheet['C']
-    documents = [] #extract contents and their title from .xlsx file
+    documents = []  # extract contents and their title from .xlsx file
     for i in range(1, len(content)):
         documents.append(Document(i, content[i].value, title[i].value))
     return documents
+
 
 # this function prepossesses the document: tokenize, normalize, stemming, delete stop words
 def preprocess(raw_document):
@@ -29,34 +32,30 @@ def preprocess(raw_document):
     stemmer = Stemmer()
     lemmatizer = Lemmatizer()
     stopwordslist = set(stopwords_list())
-    stopwordslist.update(['.',':','?','!','/','//','*','**','***','[',']','{','}',';','\'','\"','(',')',''])
+    stopwordslist.update(['.', ':', '?', '!', '/', '//', '*', '[', ']', '{', '}', ';', '\'', '\"', '(', ')', ''])
     tokens = []
-    words = word_tokenize(normalizer.normalize(raw_document.content))
-    for j in range(len(words)):
-        if (words[j] not in stopwordslist):
-            lemmatizer.lemmatize(words[j])
-            stemmer.stem(words[j])
-            # my tokens consists of: term, docID, position in the document
-            tokens.append([words[j], raw_document.id, [j + 1]])
+    words = []
+    words_temp = word_tokenize(normalizer.normalize(raw_document.content))
+    for word in words_temp:
+        if word not in stopwordslist:
+            temp = lemmatizer.lemmatize(word)
+            temp = stemmer.stem(temp)
+            words.append(temp)
+    for word in set(words):
+        # my tokens consists of: term, positions in the document
+        positions = [i + 1 for i, x in enumerate(words) if x == word]
+        tokens.append([word, positions, len(positions)])
     return tokens
 
-def positionalIndex(pos_idx, tokens):
-    # t[0] = word, t[1] = docID, t[2] = list of position
+def positionalIndex(pos_idx, id, tokens):
+    # t[0] = word, t[1] = list of position, t[2] = number of repeatitions
     for t in tokens:
         if t[0] not in pos_idx.keys():
-            pos_idx[t[0]] = [(t[1], t[2])]
+            pos_idx[t[0]] = [t[2], [(id, t[1], t[2])]]
         else:
-            temp = pos_idx[t[0]]
-            flag = 0
-            for element in temp:
-                if element[0] == t[1]: # if the word occurs multiple times in a document append the next position
-                    element[1].append(t[2][0])
-                    flag = 1
-                    break
-            if flag == 0: # the repeated word occured in a new document
-                temp.append((t[1], t[2]))
-            pos_idx[t[0]] = temp
-    return pos_idx
+            pos_idx[t[0]][0] += t[2]
+            pos_idx[t[0]][1].append((id, t[1], t[2]))
+
 
 # check if the index is constructed before or not
 def isConstructed():
@@ -66,32 +65,68 @@ def isConstructed():
         return True
     return False
 
+def retriev_doc(word, pos_idx):
+    docIDs = []
+    if word in pos_idx.keys():
+        postings_list = pos_idx[word][1]
+        for i in range(len(postings_list)):
+            docIDs.append(postings_list[i][0])
+    return docIDs, postings_list
+
+def respond():
+    pass
+
 if __name__ == '__main__':
-    start_time = datetime.now()
+    documentCollection = getDocuments()
     if isConstructed():
-        #load positional index
-        # Opening JSON file
-        # with open('Positional_Index.json') as json_file:
-        #     data = json.load(json_file)
-        #
-        #     # Print the type of data variable
-        #     print("Type:", type(data))
-        #
-        #     print(data.keys())
-        #     # Print the data of dictionary
-        #     print(data["اظهار"])
-        pass
+        # load positional index
+        with open('Positional_Index.json') as json_file:
+            pos_index = json.load(json_file)
     else:
-        documentCollection = getDocuments()
-        pos_idx = {} # our positional index
+        pos_idx = {}  # our positional index
         for document in documentCollection:
             tokens = preprocess(document)
-            pos_idx = positionalIndex(pos_idx, tokens)
-            print(document.id)
+            positionalIndex(pos_idx, document.id, tokens)
         with open('Positional_Index.json', 'w') as convert_file:
-            convert_file.write(json.dumps(pos_idx)) #save the index to a file
+            convert_file.write(json.dumps(pos_idx))  # save the index to a file
 
-    end_time = datetime.now()
-    print('Duration: {}'.format(end_time - start_time))
+    normalizer = Normalizer()
+    stemmer = Stemmer()
+    lemmatizer = Lemmatizer()
+    stopwordslist = set(stopwords_list())
+    stopwordslist.update(['.', ':', '?', '!', '/', '//', '*', '[', ']', '{', '}', ';', '\'', '\"', '(', ')', ''])
+    while (True):
+        query = input("Query/Enter F to finish: ")
+        start_time = datetime.now()
+        if(query == 'f' or query == 'F'):
+            sys.exit()
+        query_words_temp = word_tokenize(normalizer.normalize(query))
+        query_words = []
+        for word in query_words_temp:
+            if word not in stopwordslist:
+                temp = lemmatizer.lemmatize(word)
+                temp = stemmer.stem(temp)
+                query_words.append(temp)
+        if (len(query_words) == 1):
+            docIDs, _ = retriev_doc(query_words[0], pos_index)
+            print("")
+            print("Documents which contain the word in ther query: ")
+            print(docIDs)
+            print("")
+            print("Title of one related news: ")
+            print(documentCollection[docIDs[0] - 1].title)
+            print("")
+        if (len(query_words) > 1):
+            postings_lists = []
+            for word in query_words:
+                _ , posting = retriev_doc(word, pos_index)
+                postings_lists.append(posting)
+            # inja bayad eshterak begiram
+        end_time = datetime.now()
+        print('Duration: {}'.format(end_time - start_time))
+
+
+
+
 
 
