@@ -2,6 +2,7 @@ import openpyxl
 from pathlib import Path
 from hazm import *
 import json
+from datetime import datetime
 
 class Document():
     def __init__(self, id, content, title):
@@ -18,7 +19,7 @@ def getDocuments():
     content = doc_sheet['A']
     title = doc_sheet['C']
     documents = [] #extract contents and their title from .xlsx file
-    for i in range(1, 4):
+    for i in range(1, len(content)):
         documents.append(Document(i, content[i].value, title[i].value))
     return documents
 
@@ -28,6 +29,7 @@ def preprocess(raw_document):
     stemmer = Stemmer()
     lemmatizer = Lemmatizer()
     stopwordslist = set(stopwords_list())
+    stopwordslist.update(['.',':','?','!','/','//','*','**','***','[',']','{','}',';','\'','\"','(',')',''])
     tokens = []
     words = word_tokenize(normalizer.normalize(raw_document.content))
     for j in range(len(words)):
@@ -56,11 +58,28 @@ def positionalIndex(pos_idx, tokens):
             pos_idx[t[0]] = temp
     return pos_idx
 
+# check if the index is constructed before or not
 def isConstructed():
-    pass
+    path_to_file = 'Positional_Index.json'
+    path = Path(path_to_file)
+    if path.is_file():
+        return True
+    return False
 
 if __name__ == '__main__':
+    start_time = datetime.now()
     if isConstructed():
+        #load positional index
+        # Opening JSON file
+        # with open('Positional_Index.json') as json_file:
+        #     data = json.load(json_file)
+        #
+        #     # Print the type of data variable
+        #     print("Type:", type(data))
+        #
+        #     print(data.keys())
+        #     # Print the data of dictionary
+        #     print(data["اظهار"])
         pass
     else:
         documentCollection = getDocuments()
@@ -68,17 +87,11 @@ if __name__ == '__main__':
         for document in documentCollection:
             tokens = preprocess(document)
             pos_idx = positionalIndex(pos_idx, tokens)
+            print(document.id)
         with open('Positional_Index.json', 'w') as convert_file:
             convert_file.write(json.dumps(pos_idx)) #save the index to a file
-    #Opening JSON file
-    # with open('Positional_Index.json') as json_file:
-    #     data = json.load(json_file)
-    #
-    #     # Print the type of data variable
-    #     print("Type:", type(data))
-    #
-    #     # Print the data of dictionary
-    #     print(data["اظهار"])
 
+    end_time = datetime.now()
+    print('Duration: {}'.format(end_time - start_time))
 
 
