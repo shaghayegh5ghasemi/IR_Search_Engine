@@ -32,6 +32,7 @@ def preprocess(raw_document):
     stemmer = Stemmer()
     lemmatizer = Lemmatizer()
     stopwordslist = set(stopwords_list())
+    stopwordslist.update(['.', ':', '?', '!', '/', '//', '*', '[', ']', '{', '}', ';', '\'', '\"', '(', ')', ''])
     tokens = []
     words = []
     words_temp = word_tokenize(normalizer.normalize(raw_document.content))
@@ -47,7 +48,7 @@ def preprocess(raw_document):
     return tokens
 
 def positionalIndex(pos_idx, id, tokens):
-    # t[0] = word, t[1] = list of position, t[2] = number of repeatitions
+    # t[0] = word, t[1] = list of position, t[2] = number of repetition
     for t in tokens:
         if t[0] not in pos_idx.keys():
             pos_idx[t[0]] = [t[2], [(id, t[1], t[2])]]
@@ -129,6 +130,7 @@ if __name__ == '__main__':
     stemmer = Stemmer()
     lemmatizer = Lemmatizer()
     stopwordslist = set(stopwords_list())
+    stopwordslist.update(['.', ':', '?', '!', '/', '//', '*', '[', ']', '{', '}', ';', '\'', '\"', '(', ')', ''])
     while (True):
         query = input("Query/Enter F to finish: ")
         start_time = datetime.now()
@@ -149,12 +151,17 @@ if __name__ == '__main__':
                 continue
             docIDs, _ = retrievDoc(query_words[0], pos_index)
             print("")
-            print("Title of one related news: ")
+            print("Number of repetitions in documents: " , len(docIDs))
+            print("Title of the most related news: ")
             print(documentCollection[docIDs[0] - 1].title)
+            print("")
+
             sections = sent_tokenize(documentCollection[docIDs[0] - 1].content)
             for i in sections:
                 if query in i:
                     print(i)
+            print("")
+            print(documentCollection[docIDs[0] - 1].content)
             print("")
         # multiple word query
         if (len(query_words) > 1):
@@ -175,13 +182,18 @@ if __name__ == '__main__':
                     temp.append(j[0])
                 IDs.append(temp)
             response = list(set.intersection(*map(set, IDs)))
+            print("ID: ", response[0])
             print("")
-            print("Title of one related news: ")
+            print("Title of the most related news: ")
             print(documentCollection[response[0] - 1].title)
+            print("")
             sections = sent_tokenize(documentCollection[response[0] - 1].content)
             for i in sections:
                 if query in i:
                     print(i)
+            print("")
+            print(documentCollection[response[0] - 1].content)
+            print("")
         end_time = datetime.now()
         print('Duration: {}'.format(end_time - start_time))
 

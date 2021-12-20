@@ -3,7 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="e4940e4d-08f3-47d9-8b07-1a06d9f71ef6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/IR-Project(I)-Fall1400.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Positional_Index.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/report.docx" beforeDir="false" afterPath="$PROJECT_DIR$/report.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/~$report.docx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +35,28 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.IR_phase_2">
+    <configuration name="IR_phase_2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="IR_phase1" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/IR_phase_2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="IR_phase1" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -55,6 +80,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.IR_phase_2" />
         <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
@@ -77,25 +103,25 @@
       <screen x="0" y="0" width="1536" height="834" />
     </state>
     <state x="548" y="159" key="FileChooserDialogImpl/0.0.1536.834@0.0.1536.834" timestamp="1637949356356" />
-    <state width="1515" height="314" key="GridCell.Tab.0.bottom" timestamp="1637957568103">
+    <state width="1515" height="216" key="GridCell.Tab.0.bottom" timestamp="1640038499067">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1515" height="314" key="GridCell.Tab.0.bottom/0.0.1536.834@0.0.1536.834" timestamp="1637957568103" />
-    <state width="1515" height="314" key="GridCell.Tab.0.center" timestamp="1637957568103">
+    <state width="1515" height="216" key="GridCell.Tab.0.bottom/0.0.1536.834@0.0.1536.834" timestamp="1640038499067" />
+    <state width="1515" height="216" key="GridCell.Tab.0.center" timestamp="1640038499067">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1515" height="314" key="GridCell.Tab.0.center/0.0.1536.834@0.0.1536.834" timestamp="1637957568103" />
-    <state width="1515" height="314" key="GridCell.Tab.0.left" timestamp="1637957568103">
+    <state width="1515" height="216" key="GridCell.Tab.0.center/0.0.1536.834@0.0.1536.834" timestamp="1640038499067" />
+    <state width="1515" height="216" key="GridCell.Tab.0.left" timestamp="1640038499067">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1515" height="314" key="GridCell.Tab.0.left/0.0.1536.834@0.0.1536.834" timestamp="1637957568103" />
-    <state width="1515" height="314" key="GridCell.Tab.0.right" timestamp="1637957568103">
+    <state width="1515" height="216" key="GridCell.Tab.0.left/0.0.1536.834@0.0.1536.834" timestamp="1640038499067" />
+    <state width="1515" height="216" key="GridCell.Tab.0.right" timestamp="1640038499067">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1515" height="314" key="GridCell.Tab.0.right/0.0.1536.834@0.0.1536.834" timestamp="1637957568103" />
-    <state x="465" y="241" key="com.intellij.ide.util.TipDialog" timestamp="1637917238543">
+    <state width="1515" height="216" key="GridCell.Tab.0.right/0.0.1536.834@0.0.1536.834" timestamp="1640038499067" />
+    <state x="465" y="241" key="com.intellij.ide.util.TipDialog" timestamp="1640038512845">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state x="465" y="241" key="com.intellij.ide.util.TipDialog/0.0.1536.834@0.0.1536.834" timestamp="1637917238543" />
+    <state x="465" y="241" key="com.intellij.ide.util.TipDialog/0.0.1536.834@0.0.1536.834" timestamp="1640038512845" />
   </component>
 </project>
