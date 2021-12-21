@@ -14,8 +14,11 @@ def isConstructed():
     return False
 
 class PositionalIndex:
-    def __init__(self):
+    def __init__(self, numberOfDocs, titles):
         self.pos_idx = {}
+        self.docs_norm = [0 for i in range(0, numberOfDocs)]
+        self.titles = titles
+
 
     def add_doc(self, id, tokens):
         words = []
@@ -33,32 +36,54 @@ class PositionalIndex:
                 self.pos_idx[w[0]].append([id, w[1], 1 + math.log10(len(w[1]))])
 
     def calculate_tfidf(self):
-        N = len(self.pos_idx)
+        N = len(self.pos_idx.keys())
         for term in self.pos_idx.keys():
             posting = self.pos_idx[term]
             df = len(posting)
             for p in posting:
+                # p[2] = 1 + log(tf)
                 tf_idf = p[2]*math.log10(N/df)
                 p.append(tf_idf)
+                # p[0] = id
+                self.docs_norm[p[0]] += tf_idf**2
+
+
 
     def save_index(self):
+        with open('titles.json', 'w') as convert_file:
+            convert_file.write(json.dumps(self.titles))
+        with open('docs_norms.json', 'w') as convert_file:
+            convert_file.write(json.dumps(self.docs_norm))
         with open('Positional_Index.json', 'w') as convert_file:
             convert_file.write(json.dumps(self.pos_idx))  # save the index to a file
 
 
 if __name__ == '__main__':
     start_time = datetime.now()
-    # get docs
-    excel_data_df = pandas.read_excel('IR1_7k_news.xlsx', sheet_name='Sheet1')
-    docs = excel_data_df['content'].tolist()
-    docs_titles = excel_data_df['title'].tolist()
-
     if isConstructed():
         # load positional index
+        with open('titles.json') as json_file:
+            titles = json.load(json_file)
+        with open('docs_norms.json') as json_file:
+            norms = json.load(json_file)
         with open('Positional_Index.json') as json_file:
-            positional_index = json.load(json_file)
+            pos_idx = json.load(json_file)
+
+        positional_index = PositionalIndex(len(norms), titles)
+        positional_index.pos_idx = pos_idx
+        positional_index.docs_norm = norms
+        print(positional_index)
+        print(positional_index.pos_idx)
+        print(positional_index.titles)
+        print(positional_index.docs_norm)
+
+
     else:
-        positional_index = PositionalIndex()
+        # get docs
+        excel_data_df = pandas.read_excel('IR1_7k_news.xlsx', sheet_name='Sheet1')
+        docs = excel_data_df['content'].tolist()
+        docs_titles = excel_data_df['title'].tolist()
+        positional_index = PositionalIndex(len(docs), docs_titles)
         normalizer = Normalizer()
         stopwordslist = set(stopwords_list())
         stopwordslist.update(
@@ -69,9 +94,9 @@ if __name__ == '__main__':
             normalized_doc = normalizer.normalize(docs[i])
             temp_token = word_tokenize(normalized_doc)
             tokens = [token for token in temp_token if token not in stopwordslist]
-            for i in range(len(tokens)):
-                tokens[i] = lemmatizer.lemmatize(tokens[i])
-                tokens[i] = stemmer.stem(tokens[i])
+            for j in range(len(tokens)):
+                tokens[j] = lemmatizer.lemmatize(tokens[j])
+                tokens[j] = stemmer.stem(tokens[j])
             positional_index.add_doc(i, tokens)
         positional_index.calculate_tfidf()
         positional_index.save_index()
