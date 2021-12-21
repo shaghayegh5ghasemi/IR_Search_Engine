@@ -33,7 +33,13 @@ class PositionalIndex:
                 self.pos_idx[w[0]].append([id, w[1], 1 + math.log10(len(w[1]))])
 
     def calculate_tfidf(self):
-        pass
+        N = len(self.pos_idx)
+        for term in self.pos_idx.keys():
+            posting = self.pos_idx[term]
+            df = len(posting)
+            for p in posting:
+                tf_idf = p[2]*math.log10(N/df)
+                p.append(tf_idf)
 
     def save_index(self):
         with open('Positional_Index.json', 'w') as convert_file:
@@ -67,6 +73,7 @@ if __name__ == '__main__':
                 tokens[i] = lemmatizer.lemmatize(tokens[i])
                 tokens[i] = stemmer.stem(tokens[i])
             positional_index.add_doc(i, tokens)
+        positional_index.calculate_tfidf()
         positional_index.save_index()
 
     end_time = datetime.now()
