@@ -14,11 +14,10 @@ def isConstructed():
     return False
 
 class PositionalIndex:
-    def __init__(self, numberOfDocs, titles):
+    def __init__(self, numberOfDocs):
         self.pos_idx = {}
         self.numberOfDocs = numberOfDocs
         self.docs_norm = [0 for i in range(0, numberOfDocs)]
-        self.titles = titles
 
 
     def add_doc(self, id, tokens):
@@ -51,13 +50,15 @@ class PositionalIndex:
             idf_posting = [idf, posting]
             self.pos_idx[term] = idf_posting
 
-    def save_index(self):
-        with open('titles.json', 'w') as convert_file:
-            convert_file.write(json.dumps(self.titles))
-        with open('docs_norms.json', 'w') as convert_file:
-            convert_file.write(json.dumps(self.docs_norm))
-        with open('Positional_Index.json', 'w') as convert_file:
-            convert_file.write(json.dumps(self.pos_idx))  # save the index to a file
+    def sort_postings(self):
+        for term in self.pos_idx.keys():
+            idf_posting = self.pos_idx[term]
+            posting = idf_posting[1]
+            for i in range(len(posting)):
+                for j in range(i+1, len(posting)):
+                    if posting[i][3] < posting[j][3]:
+                        posting[i], posting[j] = posting[j], posting[i]
+            self.pos_idx[term] = [idf_posting[0], posting]
 
     def cosine_score(self, query_tokens, k):
         query_terms = []
@@ -66,15 +67,34 @@ class PositionalIndex:
             query_terms.append([qt, 1 + math.log10(len(positions))])
 
         scores = [0 for i in range(0, self.numberOfDocs)]
+        doc_found = 0
         for qt in query_terms:
             # qt[1] = tf_query, idf_postings[0] = idf, idf_postings[1] = qt posting
             idf_postings = self.pos_idx[qt[0]]
             w_query = qt[1]*idf_postings[0]
-            for doc in idf_postings[1]:
+            postings = idf_postings[1]
+            championlist = postings[:50]
+            for doc in championlist:
                 # doc[0] = id, doc[3] = tf-idf
                 w_doc = doc[3]
                 scores[doc[0]] += w_query*w_doc
+                doc_found = doc_found + 1
 
+        # if sufficient number of documents were not found search on the rest of the postings
+        if doc_found < k:
+            for qt in query_terms:
+                # qt[1] = tf_query, idf_postings[0] = idf, idf_postings[1] = qt posting
+                idf_postings = self.pos_idx[qt[0]]
+                w_query = qt[1] * idf_postings[0]
+                postings = idf_postings[1]
+                low_priority_posting = postings[50:]
+                for doc in low_priority_posting:
+                    # doc[0] = id, doc[3] = tf-idf
+                    w_doc = doc[3]
+                    scores[doc[0]] += w_query * w_doc
+                    doc_found = doc_found + 1
+
+        # find the top k documents
         final_score = []
         for d in range(self.numberOfDocs):
             if self.docs_norm[d] == 0 or scores[d] == 0:
@@ -89,33 +109,38 @@ class PositionalIndex:
 
         return final_score[:k]
 
+    def save_index(self):
+        with open('docs_norms.json', 'w') as convert_file:
+            convert_file.write(json.dumps(self.docs_norm))
+        with open('Positional_Index.json', 'w') as convert_file:
+            convert_file.write(json.dumps(self.pos_idx))  # save the index to a file
+
 if __name__ == '__main__':
-    start_time = datetime.now()
+    # get docs
+    excel_data_df = pandas.read_excel('IR1_7k_news.xlsx', sheet_name='Sheet1')
+    docs = excel_data_df['content'].tolist()
+    docs_titles = excel_data_df['title'].tolist()
+
     normalizer = Normalizer()
     stopwordslist = set(stopwords_list())
     stopwordslist.update(
         ['.', ':', '?', '!', '/', '//', '*', '[', ']', '{', '}', ';', '\'', '\"', '(', ')', '', '،', '؛'])
     lemmatizer = Lemmatizer()
     stemmer = Stemmer()
+
     if isConstructed():
         # load positional index
-        with open('titles.json') as json_file:
-            titles = json.load(json_file)
         with open('docs_norms.json') as json_file:
             norms = json.load(json_file)
         with open('Positional_Index.json') as json_file:
             pos_idx = json.load(json_file)
 
-        positional_index = PositionalIndex(len(norms), titles)
+        positional_index = PositionalIndex(len(norms))
         positional_index.pos_idx = pos_idx
         positional_index.docs_norm = norms
 
     else:
-        # get docs
-        excel_data_df = pandas.read_excel('IR1_7k_news.xlsx', sheet_name='Sheet1')
-        docs = excel_data_df['content'].tolist()
-        docs_titles = excel_data_df['title'].tolist()
-        positional_index = PositionalIndex(len(docs), docs_titles)
+        positional_index = PositionalIndex(len(docs))
         for i in range(len(docs)):
             normalized_doc = normalizer.normalize(docs[i])
             temp_token = word_tokenize(normalized_doc)
@@ -125,10 +150,11 @@ if __name__ == '__main__':
                 tokens[j] = stemmer.stem(tokens[j])
             positional_index.add_doc(i, tokens)
         positional_index.calculate_tfidf()
+        positional_index.sort_postings()
         positional_index.save_index()
 
     while(True):
-        k = 5 # number of results
+        k = 4 # number of results
         query = input("Enter query / Enter F to finish: ")
         normalized_query = normalizer.normalize(query)
         temp_token_query = word_tokenize(normalized_query)
@@ -137,7 +163,11 @@ if __name__ == '__main__':
             query_tokens[j] = lemmatizer.lemmatize(query_tokens[j])
             query_tokens[j] = stemmer.stem(query_tokens[j])
         results = positional_index.cosine_score(query_tokens, k)
-        print()
-    end_time = datetime.now()
-    print('Duration: {}'.format(end_time - start_time))
+        for res in results:
+            id = res[0]
+            print("Title: ", end='')
+            print(docs_titles[id])
+
+        print("Content of first document: ")
+        print(docs[results[0][0]])
 
